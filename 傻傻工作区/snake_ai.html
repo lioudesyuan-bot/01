@@ -1,0 +1,38 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>貪食蛇 AI</title>
+<style>body{background:#111;color:#eee;font-family:sans-serif;text-align:center}canvas{background:#000;border:2px solid #0f0}button{padding:6px 14px;margin:4px;font-size:15px}</style></head>
+<body><h2>🐍 傻傻貪食蛇（AI 示範模式）</h2>
+<canvas id="c" width="400" height="400"></canvas>
+<div><button id="ai">AI 模式：開</button><button id="rs">重新開始</button></div>
+<p id="sc">分數：0</p>
+<script>
+const N=20,S=20,c=document.getElementById('c'),x=c.getContext('2d');
+let snake,dir,food,aiOn=true,timer,score,dead;
+function init(){snake=[{x:10,y:10}];dir={x:1,y:0};score=0;dead=false;place();draw();
+document.getElementById('sc').textContent='分數：0';}
+function place(){do{food={x:(Math.random()*N)|0,y:(Math.random()*N)|0};}
+while(snake.some(s=>s.x==food.x&&s.y==food.y));}
+function draw(){x.fillStyle='#000';x.fillRect(0,0,400,400);
+x.fillStyle='#f33';x.fillRect(food.x*S+2,food.y*S+2,S-4,S-4);
+snake.forEach((s,i)=>{x.fillStyle=i?'#0c0':'#0ff';x.fillRect(s.x*S+1,s.y*S+1,S-2,S-2);});
+if(dead){x.fillStyle='#fff';x.font='28px sans-serif';x.fillText('GAME OVER',110,200);}}
+function next(){let d=aiOn?think():dir;
+if(d.x===-dir.x&&d.y===-dir.y)d=dir;
+const h={x:(snake[0].x+d.x+N)%N,y:(snake[0].y+d.y+N)%N};
+if(snake.some(s=>s.x==h.x&&s.y==h.y)){dead=true;clearInterval(timer);draw();return;}
+snake.unshift(h);dir=d;
+if(h.x==food.x&&h.y==food.y){score+=10;place();
+document.getElementById('sc').textContent='分數：'+score;}else snake.pop();
+draw();}
+function think(){const h=snake[0];
+const opts=[{x:1,y:0},{x:-1,y:0},{x:0,y:1},{x:0,y:-1}].filter(d=>{
+const n={x:(h.x+d.x+N)%N,y:(h.y+d.y+N)%N};return !snake.some(s=>s.x==n.x&&s.y==n.y);});
+if(!opts.length)return dir;
+opts.sort((a,b)=>dist(h,a)-dist(h,b));return opts[0];}
+function dist(h,d){return Math.abs(h.x+d.x-food.x)+Math.abs(h.y+d.y-food.y);}
+function start(){clearInterval(timer);init();timer=setInterval(next,110);}
+document.getElementById('ai').onclick=e=>{aiOn=!aiOn;e.target.textContent='AI 模式：'+(aiOn?'開':'關');};
+document.getElementById('rs').onclick=start;
+document.onkeydown=e=>{const k={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0]}[e.key];
+if(k){aiOn=false;document.getElementById('ai').textContent='AI 模式：關';dir={x:k[0],y:k[1]};}};
+start();
+</script></body></html>
